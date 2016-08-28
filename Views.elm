@@ -40,7 +40,7 @@ thFromHeader h =
         attributes =
             case mkSortFunc h of
                 Just sortfunc ->
-                    [ onClick <| SortStats sortfunc ]
+                    [ onClick <| SortStats sortfunc h ]
 
                 Nothing ->
                     []

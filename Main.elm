@@ -14,7 +14,7 @@ main =
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { rows = [], reversed = False }, Backend.getStats )
+    ( { rows = [], sortkey = "lines", reversed = False }, Backend.getStats )
 
 
 subscriptions : Model -> Sub a
@@ -30,13 +30,13 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        SortStats sortfunc ->
+        SortStats sortfunc sortkey ->
             let
                 rows =
                     List.sortWith sortfunc model.rows
 
                 reversed =
-                    if rows == model.rows then
+                    if sortkey == model.sortkey then
                         not model.reversed
                     else
                         False
@@ -47,6 +47,7 @@ update msg model =
                             List.reverse rows
                         else
                             rows
+                    , sortkey = sortkey
                     , reversed = reversed
                   }
                 , Cmd.none

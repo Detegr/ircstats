@@ -14,7 +14,13 @@ dateDecoder =
 
 statsDecoder : Decoder (List StatRow)
 statsDecoder =
-    list (object4 StatRow ("time" := dateDecoder) ("nick" := string) ("lines" := int) ("random" := string)) |> object1 identity
+    list <|
+        object1 identity <|
+            object4 StatRow
+                ("time" := dateDecoder)
+                ("nick" := string)
+                ("lines" := int)
+                ("random" := string)
 
 
 getStats : Cmd Msg

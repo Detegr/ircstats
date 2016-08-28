@@ -9,7 +9,7 @@ type alias SortFunc =
 
 
 type Msg
-    = SortStats SortFunc
+    = SortStats SortFunc String
     | StatsFetchSucceed (List StatRow)
     | StatsFetchFail Http.Error
 
@@ -19,7 +19,7 @@ type alias StatRow =
 
 
 type alias StatsTable =
-    { rows : List StatRow, reversed : Bool }
+    { rows : List StatRow, sortkey : String, reversed : Bool }
 
 
 type alias Model =
