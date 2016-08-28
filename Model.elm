@@ -1,17 +1,21 @@
 module Model exposing (..)
 
+import Date exposing (Date)
+import Http
+
 
 type alias SortFunc =
     StatRow -> StatRow -> Order
 
 
 type Msg
-    = UpdateStats
-    | SortStats SortFunc
+    = SortStats SortFunc
+    | StatsFetchSucceed (List StatRow)
+    | StatsFetchFail Http.Error
 
 
 type alias StatRow =
-    { nick : String, lines : Int, random : String }
+    { time : Date, nick : String, lines : Int, random : String }
 
 
 type alias StatsTable =

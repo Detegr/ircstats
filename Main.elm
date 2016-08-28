@@ -2,24 +2,19 @@ module Main exposing (..)
 
 import Model exposing (..)
 import Views exposing (..)
-import Backend exposing (..)
 import Html exposing (..)
 import Html.App as App
+import Backend
 
 
 main : Program Never
 main =
-    App.program { init = ( initialModel, Cmd.none ), subscriptions = subscriptions, view = view, update = update }
+    App.program { init = initialModel, subscriptions = subscriptions, view = view, update = update }
 
 
-initialModel : Model
+initialModel : ( Model, Cmd Msg )
 initialModel =
-    case decodeStats statsDecoder of
-        Ok stats ->
-            { rows = stats, reversed = False }
-
-        Err err ->
-            { rows = [], reversed = False }
+    ( { rows = [], reversed = False }, Backend.getStats )
 
 
 subscriptions : Model -> Sub a
@@ -57,5 +52,8 @@ update msg model =
                 , Cmd.none
                 )
 
-        UpdateStats ->
+        StatsFetchSucceed rows ->
+            ( { model | rows = rows }, Cmd.none )
+
+        StatsFetchFail err ->
             ( model, Cmd.none )

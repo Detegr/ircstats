@@ -1,19 +1,22 @@
 module Backend exposing (..)
 
+import Date exposing (Date)
+import Http
 import Json.Decode exposing (..)
 import Model exposing (..)
+import Task
 
 
-statsString : String
-statsString =
-    "{\"data\": [{\"nick\": \"nick1\", \"lines\": 123, \"random\": \"bcd\"},{\"nick\": \"nick2\", \"lines\": 321, \"random\": \"abc\"},{\"nick\": \"nick3\", \"lines\": 222, \"random\": \"lul\"}]}"
+dateDecoder : Decoder Date
+dateDecoder =
+    customDecoder string Date.fromString
 
 
 statsDecoder : Decoder (List StatRow)
 statsDecoder =
-    "data" := list (object3 StatRow ("nick" := string) ("lines" := int) ("random" := string)) |> object1 identity
+    list (object4 StatRow ("time" := dateDecoder) ("nick" := string) ("lines" := int) ("random" := string)) |> object1 identity
 
 
-decodeStats : Decoder a -> Result String a
-decodeStats decoder =
-    decodeString decoder statsString
+getStats : Cmd Msg
+getStats =
+    Task.perform StatsFetchFail StatsFetchSucceed (Http.get statsDecoder "http://192.168.1.2:8080/stats")
