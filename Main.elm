@@ -14,7 +14,7 @@ main =
 
 initialModel : ( Model, Cmd Msg )
 initialModel =
-    ( { rows = [], sortkey = "lines", reversed = False }, Backend.getStats )
+    ( { state = Loading, rows = [], sortkey = "", reversed = False }, Backend.getStats )
 
 
 subscriptions : Model -> Sub a
@@ -22,9 +22,17 @@ subscriptions model =
     Sub.none
 
 
-view : Model -> Html.Html Msg
+view : Model -> Html Msg
 view model =
-    statsTable model |> container
+    case model.state of
+        Error error ->
+            [ errorView error ] |> container
+
+        Ready ->
+            statsTable model |> container
+
+        Loading ->
+            container'
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -54,7 +62,7 @@ update msg model =
                 )
 
         StatsFetchSucceed rows ->
-            ( { model | rows = rows }, Cmd.none )
+            ( { model | rows = rows, state = Ready }, Cmd.none )
 
         StatsFetchFail err ->
-            ( model, Cmd.none )
+            ( { model | state = Error "Could not connect to the backend server" }, Cmd.none )

@@ -18,9 +18,11 @@ type alias StatRow =
     { time : Date, nick : String, lines : Int, random : String }
 
 
-type alias StatsTable =
-    { rows : List StatRow, sortkey : String, reversed : Bool }
-
-
 type alias Model =
-    StatsTable
+    { state : ModelState, rows : List StatRow, sortkey : String, reversed : Bool }
+
+
+type ModelState
+    = Ready
+    | Loading
+    | Error String

@@ -17,6 +17,11 @@ container inner =
     div [ class "container" ] (pageHeader :: inner)
 
 
+container' : Html Msg
+container' =
+    div [ class "container" ] [ pageHeader ]
+
+
 mkSortFunc : String -> Maybe SortFunc
 mkSortFunc header =
     -- This is pretty ugly :(
@@ -71,3 +76,8 @@ statRowToHtml row =
         , td [] [ text <| toString row.lines ]
         , td [] [ text row.random ]
         ]
+
+
+errorView : String -> Html a
+errorView err =
+    div [ class "well" ] [ text err ]
