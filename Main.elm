@@ -9,12 +9,7 @@ import Backend
 
 main : Program Never
 main =
-    App.program { init = initialModel, subscriptions = subscriptions, view = view, update = update }
-
-
-initialModel : ( Model, Cmd Msg )
-initialModel =
-    ( { state = Loading, rows = [], sortkey = "", reversed = False }, Backend.getStats )
+    App.program { init = ( mkModel, Backend.getStats ), subscriptions = subscriptions, view = view, update = update }
 
 
 subscriptions : Model -> Sub a

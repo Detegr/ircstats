@@ -22,6 +22,11 @@ type alias Model =
     { state : ModelState, rows : List StatRow, sortkey : String, reversed : Bool }
 
 
+mkModel : Model
+mkModel =
+    { state = Loading, rows = [], sortkey = "", reversed = False }
+
+
 type ModelState
     = Ready
     | Loading
