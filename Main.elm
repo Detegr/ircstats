@@ -5,6 +5,7 @@ import Views exposing (..)
 import Html exposing (..)
 import Html.App as App
 import Backend
+import Array
 
 
 main : Program Never
@@ -36,25 +37,39 @@ update msg model =
         SortStats sortfunc sortkey ->
             let
                 rows =
-                    List.sortWith sortfunc model.rows
+                    List.sortWith sortfunc (Array.toList model.rows)
 
                 reversed =
                     if sortkey == model.sortkey then
                         not model.reversed
                     else
                         False
+
+                resultRows =
+                    if reversed then
+                        List.reverse rows
+                    else
+                        rows
             in
                 ( { model
-                    | rows =
-                        if reversed then
-                            List.reverse rows
-                        else
-                            rows
+                    | rows = Array.fromList resultRows
                     , sortkey = sortkey
                     , reversed = reversed
                   }
                 , Cmd.none
                 )
+
+        ToggleRow rownum ->
+            let
+                row =
+                    Array.get rownum model.rows
+            in
+                case row of
+                    Just row ->
+                        ( { model | rows = Array.set rownum { row | expanded = not row.expanded } model.rows }, Cmd.none )
+
+                    Nothing ->
+                        ( { model | state = Error "Could not find a row to expand" }, Cmd.none )
 
         StatsFetchSucceed rows ->
             ( { model | rows = rows, state = Ready }, Cmd.none )

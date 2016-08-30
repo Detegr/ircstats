@@ -1,9 +1,10 @@
 module Views exposing (..)
 
-import Model exposing (..)
+import Array
 import Html exposing (..)
-import Html.Attributes exposing (class)
+import Html.Attributes exposing (class, colspan, src)
 import Html.Events exposing (onClick)
+import Model exposing (..)
 import String
 
 
@@ -62,19 +63,41 @@ statsTableHeader headers =
 
 statsTable : Model -> List (Html Msg)
 statsTable model =
-    [ table [ class "table table-striped table-bordered table-responsive" ]
-        [ statsTableHeader [ "Nick", "Lines", "Random line" ]
-        , tbody [] <| List.map statRowToHtml model.rows
+    let
+        indexedList =
+            Array.toIndexedList model.rows
+    in
+        [ table [ class "table table-hover table-bordered table-responsive" ]
+            [ statsTableHeader [ "Nick", "Lines", "Random line" ]
+            , tbody [] <| List.concatMap statRowToHtml indexedList
+            ]
         ]
-    ]
 
 
-statRowToHtml : StatRow -> Html b
-statRowToHtml row =
+statRowToHtml : ( Int, StatRow ) -> List (Html Msg)
+statRowToHtml ( rownum, row ) =
+    let
+        cols =
+            [ td [] [ text row.nick ]
+            , td [] [ text <| toString row.lines ]
+            , td [] [ text row.random ]
+            ]
+
+        ret =
+            [ tr [ class "clickable", onClick <| ToggleRow rownum ] cols ]
+    in
+        if row.expanded then
+            List.append ret [ expandedRow ]
+        else
+            ret
+
+
+expandedRow : Html Msg
+expandedRow =
     tr []
-        [ td [] [ text row.nick ]
-        , td [] [ text <| toString row.lines ]
-        , td [] [ text row.random ]
+        [ td [ colspan 3 ]
+            [ pre [] [ text "Nothing here yet" ]
+            ]
         ]
 
 

@@ -1,5 +1,6 @@
 module Backend exposing (..)
 
+import Array exposing (Array)
 import Date exposing (Date)
 import Http
 import Json.Decode exposing (..)
@@ -12,15 +13,15 @@ dateDecoder =
     customDecoder string Date.fromString
 
 
-statsDecoder : Decoder (List StatRow)
+statsDecoder : Decoder (Array StatRow)
 statsDecoder =
-    list <|
-        object1 identity <|
-            object4 StatRow
-                ("time" := dateDecoder)
-                ("nick" := string)
-                ("lines" := int)
-                ("random" := string)
+    array <|
+        object5 StatRow
+            ("time" := dateDecoder)
+            ("nick" := string)
+            ("lines" := int)
+            ("random" := string)
+            (succeed False)
 
 
 getStats : Cmd Msg
