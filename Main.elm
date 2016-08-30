@@ -27,7 +27,7 @@ view model =
             statsTable model |> container
 
         Loading ->
-            container'
+            loadingView
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

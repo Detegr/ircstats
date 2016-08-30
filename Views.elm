@@ -17,9 +17,9 @@ container inner =
     div [ class "container" ] (pageHeader :: inner)
 
 
-container' : Html Msg
-container' =
-    div [ class "container" ] [ pageHeader ]
+loadingView : Html Msg
+loadingView =
+    div [ class "container" ] [ pageHeader, img [ class "img-responsive center-block", src "static/spinner.gif" ] [] ]
 
 
 mkSortFunc : String -> Maybe SortFunc
