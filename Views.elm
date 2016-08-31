@@ -6,6 +6,7 @@ import Html.Attributes exposing (class, colspan, src)
 import Html.Events exposing (onClick)
 import Model exposing (..)
 import String
+import Date.Format exposing (format)
 
 
 pageHeader : Html a
@@ -87,16 +88,30 @@ statRowToHtml ( rownum, row ) =
             [ tr [ class "clickable", onClick <| ToggleRow rownum ] cols ]
     in
         if row.expanded then
-            List.append ret [ expandedRow ]
+            case row.context of
+                Just context ->
+                    List.append ret [ expandedRow context ]
+
+                Nothing ->
+                    ret
         else
             ret
 
 
-expandedRow : Html Msg
-expandedRow =
+styleContextRow : ContextRow -> String
+styleContextRow row =
+    let
+        t =
+            row.time
+    in
+        (format "%H:%M" t) ++ " <" ++ row.nick ++ "> " ++ row.line ++ "\n"
+
+
+expandedRow : List ContextRow -> Html Msg
+expandedRow context =
     tr []
         [ td [ colspan 3 ]
-            [ pre [] [ text "Nothing here yet" ]
+            [ pre [] <| List.map (styleContextRow >> text) context
             ]
         ]
 

@@ -12,12 +12,17 @@ type alias SortFunc =
 type Msg
     = SortStats SortFunc String
     | StatsFetchSucceed (Array StatRow)
+    | ContextFetchSucceed ( Int, List ContextRow )
     | StatsFetchFail Http.Error
     | ToggleRow Int
 
 
 type alias StatRow =
-    { time : Date, nick : String, lines : Int, random : String, expanded : Bool }
+    { messageid : Int, nick : String, lines : Int, random : String, expanded : Bool, context : Maybe (List ContextRow) }
+
+
+type alias ContextRow =
+    { time : Date, nick : String, line : String }
 
 
 type alias Model =

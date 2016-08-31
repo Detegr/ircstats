@@ -66,13 +66,27 @@ update msg model =
             in
                 case row of
                     Just row ->
-                        ( { model | rows = Array.set rownum { row | expanded = not row.expanded } model.rows }, Cmd.none )
+                        ( { model | rows = Array.set rownum { row | expanded = not row.expanded } model.rows }
+                        , Backend.getContext rownum row.messageid
+                        )
 
                     Nothing ->
                         ( { model | state = Error "Could not find a row to expand" }, Cmd.none )
+
+        ContextFetchSucceed ( rownum, context ) ->
+            let
+                row =
+                    Array.get rownum model.rows
+            in
+                case row of
+                    Just row ->
+                        ( { model | rows = Array.set rownum { row | context = Just context } model.rows }, Cmd.none )
+
+                    Nothing ->
+                        ( { model | state = Error "Could not find a row to set context to" }, Cmd.none )
 
         StatsFetchSucceed rows ->
             ( { model | rows = rows, state = Ready }, Cmd.none )
 
         StatsFetchFail err ->
-            ( { model | state = Error "Could not connect to the backend server" }, Cmd.none )
+            ( { model | state = Error (toString err) }, Cmd.none )
