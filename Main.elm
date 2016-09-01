@@ -71,7 +71,7 @@ update msg model =
                         )
 
                     Nothing ->
-                        ( { model | state = Error "Could not find a row to expand" }, Cmd.none )
+                        ( model, Cmd.none )
 
         ContextFetchSucceed ( rownum, context ) ->
             let
@@ -84,6 +84,29 @@ update msg model =
 
                     Nothing ->
                         ( { model | state = Error "Could not find a row to set context to" }, Cmd.none )
+
+        ScrollContext messageid rownum direction ->
+            let
+                row =
+                    Array.get rownum model.rows
+
+                scrollAmount =
+                    5
+
+                msgid =
+                    case direction of
+                        Up ->
+                            messageid - scrollAmount
+
+                        Down ->
+                            messageid + scrollAmount
+            in
+                case row of
+                    Just row ->
+                        ( { model | rows = Array.set rownum { row | messageid = msgid } model.rows }, Backend.getContext rownum msgid )
+
+                    Nothing ->
+                        ( model, Cmd.none )
 
         StatsFetchSucceed rows ->
             ( { model | rows = rows, state = Ready }, Cmd.none )

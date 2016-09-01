@@ -15,6 +15,12 @@ type Msg
     | ContextFetchSucceed ( Int, List ContextRow )
     | StatsFetchFail Http.Error
     | ToggleRow Int
+    | ScrollContext Int Int Direction
+
+
+type Direction
+    = Up
+    | Down
 
 
 type alias StatRow =

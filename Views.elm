@@ -64,15 +64,11 @@ statsTableHeader headers =
 
 statsTable : Model -> List (Html Msg)
 statsTable model =
-    let
-        indexedList =
-            Array.toIndexedList model.rows
-    in
-        [ table [ class "table table-hover table-bordered table-responsive" ]
-            [ statsTableHeader [ "Nick", "Lines", "Random line" ]
-            , tbody [] <| List.concatMap statRowToHtml indexedList
-            ]
+    [ table [ class "table table-hover table-bordered table-responsive" ]
+        [ statsTableHeader [ "Nick", "Lines", "Random line" ]
+        , tbody [] <| List.concatMap statRowToHtml (Array.toIndexedList model.rows)
         ]
+    ]
 
 
 statRowToHtml : ( Int, StatRow ) -> List (Html Msg)
@@ -90,7 +86,7 @@ statRowToHtml ( rownum, row ) =
         if row.expanded then
             case row.context of
                 Just context ->
-                    List.append ret [ expandedRow context ]
+                    List.append ret [ expandedRow row rownum context ]
 
                 Nothing ->
                     ret
@@ -107,11 +103,14 @@ styleContextRow row =
         (format "%H:%M" t) ++ " <" ++ row.nick ++ "> " ++ row.line ++ "\n"
 
 
-expandedRow : List ContextRow -> Html Msg
-expandedRow context =
+expandedRow : StatRow -> Int -> List ContextRow -> Html Msg
+expandedRow row rownum context =
     tr []
         [ td [ colspan 3 ]
-            [ pre [] <| List.map (styleContextRow >> text) context
+            [ pre [] <|
+                [ a [ class "clickable", onClick <| ScrollContext row.messageid rownum Up ] [ text "Previous lines\n" ] ]
+                    ++ (List.map (styleContextRow >> text) context)
+                    ++ [ a [ class "clickable", onClick <| ScrollContext row.messageid rownum Down ] [ text "Next lines\n" ] ]
             ]
         ]
 
