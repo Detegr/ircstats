@@ -5,6 +5,14 @@ import Http
 import Array exposing (Array)
 
 
+type alias MessageId =
+    Int
+
+
+type alias RowNumber =
+    Int
+
+
 type alias SortFunc =
     StatRow -> StatRow -> Order
 
@@ -12,10 +20,10 @@ type alias SortFunc =
 type Msg
     = SortStats SortFunc String
     | StatsFetchSucceed (Array StatRow)
-    | ContextFetchSucceed ( Int, List ContextRow )
+    | ContextFetchSucceed ( RowNumber, Context )
     | StatsFetchFail Http.Error
-    | ToggleRow Int
-    | ScrollContext Int Int Direction
+    | ToggleRow RowNumber
+    | ScrollContext MessageId RowNumber Direction
 
 
 type Direction
@@ -23,8 +31,12 @@ type Direction
     | Down
 
 
+type alias Context =
+    { contextRows : Maybe (List ContextRow), loadingDirection : Maybe Direction }
+
+
 type alias StatRow =
-    { messageid : Int, nick : String, lines : Int, random : String, expanded : Bool, context : Maybe (List ContextRow) }
+    { messageid : Int, nick : String, lines : Int, random : String, expanded : Bool, context : Maybe Context }
 
 
 type alias ContextRow =

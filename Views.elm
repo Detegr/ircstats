@@ -83,15 +83,17 @@ statRowToHtml ( rownum, row ) =
         ret =
             [ tr [ class "clickable", onClick <| ToggleRow rownum ] cols ]
     in
-        if row.expanded then
-            case row.context of
-                Just context ->
-                    List.append ret [ expandedRow row rownum context ]
+        case row.context of
+            Just context ->
+                case context.contextRows of
+                    Just _ ->
+                        List.append ret [ expandedRow row rownum context ]
 
-                Nothing ->
-                    ret
-        else
-            ret
+                    Nothing ->
+                        ret
+
+            Nothing ->
+                ret
 
 
 styleContextRow : ContextRow -> String
@@ -103,16 +105,56 @@ styleContextRow row =
         (format "%H:%M" t) ++ " <" ++ row.nick ++ "> " ++ row.line ++ "\n"
 
 
-expandedRow : StatRow -> Int -> List ContextRow -> Html Msg
+expandedRow : StatRow -> Int -> Context -> Html Msg
 expandedRow row rownum context =
-    tr []
-        [ td [ colspan 3 ]
-            [ pre [] <|
-                [ a [ class "clickable", onClick <| ScrollContext row.messageid rownum Up ] [ text "Previous lines\n" ] ]
-                    ++ (List.map (styleContextRow >> text) context)
-                    ++ [ a [ class "clickable", onClick <| ScrollContext row.messageid rownum Down ] [ text "Next lines\n" ] ]
+    let
+        spinner =
+            img [ src "static/spinner2.gif" ] []
+
+        scrollerLoading : String -> Html Msg
+        scrollerLoading txt =
+            span [] [ text (txt ++ " "), spinner, text "\n" ]
+
+        mkScroller : String -> Maybe Direction -> Direction -> Html Msg
+        mkScroller txt dir wantedDir =
+            let
+                notLoading =
+                    a [ class "clickable", onClick <| ScrollContext row.messageid rownum wantedDir ] [ text txt, text "\n" ]
+            in
+                case dir of
+                    Just dir ->
+                        if dir == wantedDir then
+                            scrollerLoading txt
+                        else
+                            notLoading
+
+                    _ ->
+                        notLoading
+
+        topScroller : String -> Maybe Direction -> Html Msg
+        topScroller txt dir =
+            mkScroller txt dir Up
+
+        bottomScroller : String -> Maybe Direction -> Html Msg
+        bottomScroller txt dir =
+            mkScroller txt dir Down
+
+        contextData =
+            case context.contextRows of
+                Just contextData ->
+                    contextData
+
+                Nothing ->
+                    []
+    in
+        tr []
+            [ td [ colspan 3 ]
+                [ pre [] <|
+                    [ topScroller "Previous lines" context.loadingDirection ]
+                        ++ (List.map (styleContextRow >> text) contextData)
+                        ++ [ bottomScroller "Next lines" context.loadingDirection ]
+                ]
             ]
-        ]
 
 
 errorView : String -> Html a

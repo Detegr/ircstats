@@ -25,9 +25,12 @@ statsDecoder =
             (succeed Nothing)
 
 
-contextDecoder : Int -> Decoder ( Int, List ContextRow )
+contextDecoder : Int -> Decoder ( Int, Context )
 contextDecoder messageid =
-    object2 (,) (succeed messageid) (list <| object3 ContextRow ("time" := date) ("nick" := string) ("line" := string))
+    object2 (,)
+        (succeed messageid)
+    <|
+        object2 Context (maybe <| list <| object3 ContextRow ("time" := date) ("nick" := string) ("line" := string)) (succeed Nothing)
 
 
 getStats : Cmd Msg

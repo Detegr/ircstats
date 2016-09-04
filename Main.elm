@@ -24,11 +24,11 @@ view model =
         Error error ->
             [ errorView error ] |> container
 
-        Ready ->
-            statsTable model |> container
-
         Loading ->
             loadingView
+
+        _ ->
+            statsTable model |> container
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -103,7 +103,18 @@ update msg model =
             in
                 case row of
                     Just row ->
-                        ( { model | rows = Array.set rownum { row | messageid = msgid } model.rows }, Backend.getContext rownum msgid )
+                        let
+                            ctx =
+                                case row.context of
+                                    Just ctx ->
+                                        Just { ctx | loadingDirection = Just direction }
+
+                                    Nothing ->
+                                        Nothing
+                        in
+                            ( { model | rows = Array.set rownum { row | messageid = msgid, context = ctx } model.rows }
+                            , Backend.getContext rownum msgid
+                            )
 
                     Nothing ->
                         ( model, Cmd.none )
