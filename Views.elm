@@ -83,8 +83,8 @@ statRowToHtml ( rownum, row ) =
         ret =
             [ tr [ class "clickable", onClick <| ToggleRow rownum ] cols ]
     in
-        case row.context of
-            Just context ->
+        case ( row.context, row.expanded ) of
+            ( Just context, True ) ->
                 case context.contextRows of
                     Just _ ->
                         List.append ret [ expandedRow row rownum context ]
@@ -92,7 +92,7 @@ statRowToHtml ( rownum, row ) =
                     Nothing ->
                         ret
 
-            Nothing ->
+            _ ->
                 ret
 
 
