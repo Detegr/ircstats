@@ -3,6 +3,7 @@ module Model exposing (..)
 import Date exposing (Date)
 import Http
 import Array exposing (Array)
+import Debounce
 
 
 type alias MessageId =
@@ -21,9 +22,13 @@ type Msg
     = SortStats SortFunc String
     | StatsFetchSucceed (Array StatRow)
     | ContextFetchSucceed ( RowNumber, Context )
+    | SearchSucceed SearchResult
     | StatsFetchFail Http.Error
     | ToggleRow RowNumber
     | ScrollContext MessageId RowNumber Direction
+    | InitSearch String
+    | Search String
+    | Debounce (Debounce.Msg Msg)
 
 
 type Direction
@@ -43,13 +48,17 @@ type alias ContextRow =
     { time : Date, nick : String, line : String }
 
 
+type alias SearchResult =
+    Array ContextRow
+
+
 type alias Model =
-    { state : ModelState, rows : Array StatRow, sortkey : String, reversed : Bool }
+    { state : ModelState, rows : Array StatRow, search : Maybe (Array ContextRow), sortkey : String, reversed : Bool, debouncer : Debounce.Model Msg }
 
 
 mkModel : Model
 mkModel =
-    { state = Loading, rows = Array.empty, sortkey = "", reversed = False }
+    { state = Loading, rows = Array.empty, search = Nothing, sortkey = "", reversed = False, debouncer = Debounce.init }
 
 
 type ModelState

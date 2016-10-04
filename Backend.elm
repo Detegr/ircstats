@@ -33,6 +33,11 @@ contextDecoder messageid =
         object2 Context (maybe <| list <| object3 ContextRow ("time" := date) ("nick" := string) ("line" := string)) (succeed Nothing)
 
 
+searchDecoder : Decoder SearchResult
+searchDecoder =
+    array <| object3 ContextRow ("time" := date) ("nick" := string) ("line" := string)
+
+
 getStats : Cmd Msg
 getStats =
     Task.perform StatsFetchFail StatsFetchSucceed (Http.get statsDecoder "http://192.168.1.2:8080/stats")
@@ -41,3 +46,8 @@ getStats =
 getContext : Int -> Int -> Cmd Msg
 getContext rownum messageid =
     Task.perform StatsFetchFail ContextFetchSucceed (Http.get (contextDecoder rownum) <| "http://192.168.1.2:8080/context/" ++ (toString messageid))
+
+
+getSearch : String -> Cmd Msg
+getSearch text =
+    Task.perform StatsFetchFail SearchSucceed (Http.get searchDecoder ("http://192.168.1.2:8080/search?text=" ++ (Http.uriEncode text)))

@@ -2,8 +2,8 @@ module Views exposing (..)
 
 import Array
 import Html exposing (..)
-import Html.Attributes exposing (class, colspan, src)
-import Html.Events exposing (onClick)
+import Html.Attributes exposing (class, colspan, placeholder, src)
+import Html.Events exposing (onClick, onInput)
 import Model exposing (..)
 import String
 import Date.Format exposing (format)
@@ -17,6 +17,11 @@ pageHeader =
 container : List (Html Msg) -> Html Msg
 container inner =
     div [ class "container" ] (pageHeader :: inner)
+
+
+searchBox : Html Msg
+searchBox =
+    div [ class "form-group" ] [ input [ class "form-control", placeholder "Search", onInput InitSearch ] [] ]
 
 
 loadingView : Html Msg
@@ -64,11 +69,24 @@ statsTableHeader headers =
 
 statsTable : Model -> List (Html Msg)
 statsTable model =
-    [ table [ class "table table-hover table-bordered table-responsive" ]
-        [ statsTableHeader [ "Nick", "Lines", "Random line" ]
-        , tbody [] <| List.concatMap statRowToHtml (Array.toIndexedList model.rows)
-        ]
-    ]
+    case model.search of
+        Nothing ->
+            [ table [ class "table table-hover table-bordered table-responsive" ]
+                [ statsTableHeader [ "Nick", "Lines", "Random line" ]
+                , tbody [] <| List.concatMap statRowToHtml (Array.toIndexedList model.rows)
+                ]
+            ]
+
+        Just search ->
+            [ table [ class "table table-hover table-bordered table-responsive" ]
+                [ tbody
+                    []
+                    (List.map
+                        (\row -> tr [] [ td [] [ text (styleContextRow row) ] ])
+                        (Array.toList search)
+                    )
+                ]
+            ]
 
 
 statRowToHtml : ( Int, StatRow ) -> List (Html Msg)

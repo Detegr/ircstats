@@ -1,11 +1,15 @@
 module Main exposing (..)
 
-import Model exposing (..)
-import Views exposing (..)
+import Array
+import Backend
+import Debounce
 import Html exposing (..)
 import Html.App as App
-import Backend
-import Array
+import Model exposing (..)
+import String
+import Task
+import Time exposing (millisecond)
+import Views exposing (..)
 
 
 main : Program Never
@@ -28,7 +32,7 @@ view model =
             loadingView
 
         _ ->
-            statsTable model |> container
+            (searchBox :: statsTable model) |> container
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -124,3 +128,38 @@ update msg model =
 
         StatsFetchFail err ->
             ( { model | state = Error (toString err) }, Cmd.none )
+
+        InitSearch txt ->
+            ( model, mkCmd <| Debounce <| Debounce.Bounce <| mkCmd (Search txt) )
+
+        Search txt ->
+            if String.length txt >= 5 then
+                ( model, Backend.getSearch txt )
+            else
+                ( { model | search = Nothing }, Cmd.none )
+
+        SearchSucceed rows ->
+            ( { model | search = Just rows, state = Ready }, Cmd.none )
+
+        Debounce a ->
+            let
+                ( newdebouncer, eff ) =
+                    Debounce.update (250 * millisecond) a model.debouncer
+            in
+                ( { model | debouncer = newdebouncer }
+                , Cmd.map
+                    (\r ->
+                        case r of
+                            Err a' ->
+                                Debounce a'
+
+                            Ok a' ->
+                                a'
+                    )
+                    eff
+                )
+
+
+mkCmd : a -> Cmd a
+mkCmd =
+    Task.perform (Debug.crash << toString) identity << Task.succeed
