@@ -37,23 +37,27 @@ type Direction
 
 
 type alias Context =
-    { contextRows : Maybe (List ContextRow), loadingDirection : Maybe Direction }
+    { contextRows : Maybe (List DataRow), loadingDirection : Maybe Direction }
 
 
 type alias StatRow =
     { messageid : Int, nick : String, lines : Int, random : String, expanded : Bool, context : Maybe Context }
 
 
-type alias ContextRow =
+type alias DataRow =
     { time : Date, nick : String, line : String }
 
 
+type alias SearchRow =
+    { messageid : Int, row : DataRow, expanded : Bool, context : Maybe Context }
+
+
 type alias SearchResult =
-    Array ContextRow
+    Array SearchRow
 
 
 type alias Model =
-    { state : ModelState, rows : Array StatRow, search : Maybe (Array ContextRow), sortkey : String, reversed : Bool, debouncer : Debounce.Model Msg }
+    { state : ModelState, rows : Array StatRow, search : Maybe SearchResult, sortkey : String, reversed : Bool, debouncer : Debounce.Model Msg }
 
 
 mkModel : Model

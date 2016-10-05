@@ -81,10 +81,9 @@ statsTable model =
             [ table [ class "table table-hover table-bordered table-responsive" ]
                 [ tbody
                     []
-                    (List.map
-                        (\row -> tr [] [ td [] [ text (styleContextRow row) ] ])
-                        (Array.toList search)
-                    )
+                  <|
+                    List.concatMap searchRowToHtml <|
+                        Array.toIndexedList search
                 ]
             ]
 
@@ -101,21 +100,39 @@ statRowToHtml ( rownum, row ) =
         ret =
             [ tr [ class "clickable", onClick <| ToggleRow rownum ] cols ]
     in
-        case ( row.context, row.expanded ) of
-            ( Just context, True ) ->
-                case context.contextRows of
-                    Just _ ->
-                        List.append ret [ expandedRow row rownum context ]
-
-                    Nothing ->
-                        ret
-
-            _ ->
-                ret
+        handleExpansion ret ( rownum, row )
 
 
-styleContextRow : ContextRow -> String
-styleContextRow row =
+searchRowToHtml : ( Int, SearchRow ) -> List (Html Msg)
+searchRowToHtml ( i, searchrow ) =
+    let
+        ret =
+            [ tr []
+                [ td [ class "clickable", onClick <| ToggleRow i ]
+                    [ text (styleDataRow searchrow.row) ]
+                ]
+            ]
+    in
+        handleExpansion ret ( i, searchrow )
+
+
+handleExpansion : List (Html Msg) -> ( Int, { a | messageid : Int, context : Maybe Context, expanded : Bool } ) -> List (Html Msg)
+handleExpansion ret ( rownum, row ) =
+    case ( row.context, row.expanded ) of
+        ( Just context, True ) ->
+            case context.contextRows of
+                Just _ ->
+                    List.append ret [ expandedRow row rownum context ]
+
+                Nothing ->
+                    ret
+
+        _ ->
+            ret
+
+
+styleDataRow : DataRow -> String
+styleDataRow row =
     let
         t =
             row.time
@@ -123,7 +140,7 @@ styleContextRow row =
         (format "%H:%M" t) ++ " <" ++ row.nick ++ "> " ++ row.line ++ "\n"
 
 
-expandedRow : StatRow -> Int -> Context -> Html Msg
+expandedRow : { a | messageid : MessageId } -> Int -> Context -> Html Msg
 expandedRow row rownum context =
     let
         spinner =
@@ -169,7 +186,7 @@ expandedRow row rownum context =
             [ td [ colspan 3 ]
                 [ pre [] <|
                     [ topScroller "Previous lines" context.loadingDirection ]
-                        ++ (List.map (styleContextRow >> text) contextData)
+                        ++ (List.map (styleDataRow >> text) contextData)
                         ++ [ bottomScroller "Next lines" context.loadingDirection ]
                 ]
             ]

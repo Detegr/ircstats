@@ -30,12 +30,21 @@ contextDecoder messageid =
     object2 (,)
         (succeed messageid)
     <|
-        object2 Context (maybe <| list <| object3 ContextRow ("time" := date) ("nick" := string) ("line" := string)) (succeed Nothing)
+        object2 Context (maybe <| list <| object3 DataRow ("time" := date) ("nick" := string) ("line" := string)) (succeed Nothing)
 
 
 searchDecoder : Decoder SearchResult
 searchDecoder =
-    array <| object3 ContextRow ("time" := date) ("nick" := string) ("line" := string)
+    array <|
+        object4 SearchRow
+            ("messageid" := int)
+            (object3 DataRow
+                ("time" := date)
+                ("nick" := string)
+                ("line" := string)
+            )
+            (succeed False)
+            (succeed Nothing)
 
 
 getStats : Cmd Msg

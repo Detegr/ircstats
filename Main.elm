@@ -67,32 +67,87 @@ update msg model =
             let
                 row =
                     Array.get rownum model.rows
+
+                search =
+                    case model.search of
+                        Just search ->
+                            search
+
+                        Nothing ->
+                            Array.empty
+
+                srow =
+                    case model.search of
+                        Just search ->
+                            Array.get rownum search
+
+                        Nothing ->
+                            Nothing
             in
-                case row of
-                    Just row ->
-                        ( { model | rows = Array.set rownum { row | expanded = not row.expanded } model.rows }
-                        , Backend.getContext rownum row.messageid
+                case srow of
+                    Just srow ->
+                        ( { model | search = Just <| Array.set rownum { srow | expanded = not srow.expanded } search }
+                        , Backend.getContext rownum srow.messageid
                         )
 
                     Nothing ->
-                        ( model, Cmd.none )
+                        case row of
+                            Just row ->
+                                ( { model | rows = Array.set rownum { row | expanded = not row.expanded } model.rows }
+                                , Backend.getContext rownum row.messageid
+                                )
+
+                            Nothing ->
+                                ( model, Cmd.none )
 
         ContextFetchSucceed ( rownum, context ) ->
             let
                 row =
                     Array.get rownum model.rows
+
+                srow =
+                    case model.search of
+                        Just search ->
+                            Array.get rownum search
+
+                        Nothing ->
+                            Nothing
+
+                search =
+                    case model.search of
+                        Just search ->
+                            search
+
+                        Nothing ->
+                            Array.empty
             in
-                case row of
-                    Just row ->
-                        ( { model | rows = Array.set rownum { row | context = Just context } model.rows }, Cmd.none )
+                case srow of
+                    Just srow ->
+                        ( { model | search = Just <| Array.set rownum { srow | context = Just context } search }, Cmd.none )
 
                     Nothing ->
-                        ( { model | state = Error "Could not find a row to set context to" }, Cmd.none )
+                        case row of
+                            Just row ->
+                                ( { model | rows = Array.set rownum { row | context = Just context } model.rows }, Cmd.none )
+
+                            Nothing ->
+                                ( { model | state = Error "Could not find a row to set context to" }, Cmd.none )
 
         ScrollContext messageid rownum direction ->
             let
                 row =
                     Array.get rownum model.rows
+
+                search =
+                    case model.search of
+                        Just search ->
+                            search
+
+                        Nothing ->
+                            Array.empty
+
+                srow =
+                    Array.get rownum search
 
                 scrollAmount =
                     5
@@ -104,24 +159,30 @@ update msg model =
 
                         Down ->
                             messageid + scrollAmount
-            in
-                case row of
-                    Just row ->
-                        let
-                            ctx =
-                                case row.context of
-                                    Just ctx ->
-                                        Just { ctx | loadingDirection = Just direction }
 
-                                    Nothing ->
-                                        Nothing
-                        in
-                            ( { model | rows = Array.set rownum { row | messageid = msgid, context = ctx } model.rows }
-                            , Backend.getContext rownum msgid
-                            )
+                getCtx row =
+                    case row.context of
+                        Just ctx ->
+                            Just { ctx | loadingDirection = Just direction }
+
+                        Nothing ->
+                            Nothing
+            in
+                case srow of
+                    Just srow ->
+                        ( { model | search = Just <| Array.set rownum { srow | messageid = msgid, context = getCtx srow } search }
+                        , Backend.getContext rownum msgid
+                        )
 
                     Nothing ->
-                        ( model, Cmd.none )
+                        case row of
+                            Just row ->
+                                ( { model | rows = Array.set rownum { row | messageid = msgid, context = getCtx row } model.rows }
+                                , Backend.getContext rownum msgid
+                                )
+
+                            Nothing ->
+                                ( model, Cmd.none )
 
         StatsFetchSucceed rows ->
             ( { model | rows = rows, state = Ready }, Cmd.none )
